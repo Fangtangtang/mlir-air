@@ -31,6 +31,7 @@ components
 air_project
 __pycache__/
 sandbox
+my_install
 
 # build results
 libadf.a
