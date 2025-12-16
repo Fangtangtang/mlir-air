@@ -24,7 +24,7 @@ def build_module(n, tile_n, np_dtype_in):
     b_size = a_size
     out_size = a_size
     xrt_dtype_in = type_mapper(np_dtype_in)
-    num_tiles = 2
+    num_tiles = 1
     assert n % (tile_n * num_tiles) == 0
     VECTOR_SIZE = 16
     index_type = IndexType.get()
@@ -164,7 +164,7 @@ def build_module(n, tile_n, np_dtype_in):
 
 if __name__ == "__main__":
     # Default values.
-    N = 65536
+    N = 1024
     TILE_N = 1024
     INPUT_DATATYPE = np.float32
 
