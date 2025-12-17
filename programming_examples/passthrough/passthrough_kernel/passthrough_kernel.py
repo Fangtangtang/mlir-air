@@ -114,5 +114,7 @@ if __name__ == "__main__":
     input_a = np.arange(args.vector_size, dtype=INOUT_DATATYPE)
     output_b = np.arange(args.vector_size, dtype=INOUT_DATATYPE)
 
+    print(input_a, len(input_a))
+    print(output_b)
     runner = XRTRunner(verbose=args.verbose)
     exit(runner.run_test(mlir_module, inputs=[input_a], expected_outputs=[output_b]))

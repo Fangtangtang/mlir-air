@@ -222,27 +222,6 @@ if __name__ == "__main__":
 
     if args.compile_mode == "compile-and-run":
 
-        # Stochastically sample num_sample results, and pass to XRTRunner backend for verification.
-        num_samples = 100
-        sampled_indices = np.vstack(
-            [
-                np.random.randint(0, args.n, num_samples),  # i indices
-            ]
-        )
-
-        # Compute reference results for sampled indices
-        sampled_values = np.array(
-            [input_a[i] + input_b[i] for i in zip(*sampled_indices)],
-            dtype=INPUT_DATATYPE,
-        )
-
-        # Store as a dictionary
-        sampled_data = {
-            "shape": (args.n,),
-            "indices": sampled_indices,
-            "values": sampled_values,
-        }
-
         ###### Compile and test
         runner = XRTRunner(
             verbose=args.verbose,
@@ -252,7 +231,7 @@ if __name__ == "__main__":
             runner.run_test(
                 mlir_module,
                 inputs=[input_a, input_b],
-                stochastic_expected_outputs=[sampled_data],
+                expected_outputs=[input_a + input_b],
                 rtol=1e-3,
             )
         )
