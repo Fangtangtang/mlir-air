@@ -1,179 +1,166 @@
-python3 /home/sf668/workspace/mlir-air/programming_examples/matrix_multiplication/i8/run.py -p --arch aie2 --direct-codegen
 #map = affine_map<()[s0] -> (s0 * 256)>
 #map1 = affine_map<()[s0] -> (s0 * 512)>
 #map2 = affine_map<()[s0] -> (s0 * 64)>
-#map3 = affine_map<()[s0] -> (s0 + 1)>
-#map4 = affine_map<(d0) -> (d0 * 32)>
-#map5 = affine_map<(d0) -> (d0 * 512)>
-#map6 = affine_map<()[s0] -> (s0 * 512 + 512)>
-#map7 = affine_map<()[s0] -> (s0 * 32 + 32)>
-#map8 = affine_map<(d0, d1, d2, d3, d4, d5) -> (d2, d0, d3, d5)>
-#map9 = affine_map<(d0, d1, d2, d3, d4, d5) -> (d1, d2, d5, d4)>
-#map10 = affine_map<(d0, d1, d2, d3, d4, d5) -> (d0, d1, d3, d4)>
+#map3 = affine_map<(d0, d1, d2, d3, d4, d5, d6, d7, d8) -> (d0, d2, d5, d3, d6, d8)>
+#map4 = affine_map<(d0, d1, d2, d3, d4, d5, d6, d7, d8) -> (d1, d2, d4, d5, d8, d7)>
+#map5 = affine_map<(d0, d1, d2, d3, d4, d5, d6, d7, d8) -> (d1, d0, d4, d3, d6, d7)>
 module {
   func.func @matmul_bf16(%arg0: memref<512x512xi8>, %arg1: memref<512x512xi8>, %arg2: memref<512x512xi16>) {
     %c2 = arith.constant 2 : index
     %c1 = arith.constant 1 : index
     air.launch (%arg3, %arg4) in (%arg5=%c2, %arg6=%c1) args(%arg7=%arg0, %arg8=%arg1, %arg9=%arg2) : memref<512x512xi8>, memref<512x512xi8>, memref<512x512xi16> {
       air.segment @matmul_seg  args(%arg10=%arg3, %arg11=%arg4, %arg12=%arg7, %arg13=%arg8, %arg14=%arg9) : index, index, memref<512x512xi8>, memref<512x512xi8>, memref<512x512xi16> {
-        %c8192 = arith.constant 8192 : index
-        %c131072 = arith.constant 131072 : index
-        %c128 = arith.constant 128 : index
-        %c512 = arith.constant 512 : index
-        %c32768 = arith.constant 32768 : index
-        %c256 = arith.constant 256 : index
-        %c64 = arith.constant 64 : index
-        %c1_0 = arith.constant 1 : index
-        %c2_1 = arith.constant 2 : index
-        %c0 = arith.constant 0 : index
-        %c4 = arith.constant 4 : index
         %alloc = memref.alloc() : memref<4x1x64x256xi8, 1 : i32>
-        %alloc_2 = memref.alloc() : memref<1x4x256x128xi8, 1 : i32>
-        %alloc_3 = memref.alloc() : memref<4x4x64x128xi16, 1 : i32>
-        %alloc_4 = memref.alloc() : memref<1x1x8x16x4x8xi8, 2 : i32>
-        %alloc_5 = memref.alloc() : memref<1x1x16x8x8x8xi8, 2 : i32>
-        %alloc_6 = memref.alloc() : memref<4x4x16x16x4x8xi16, 2 : i32>
+        %alloc_0 = memref.alloc() : memref<1x4x256x128xi8, 1 : i32>
+        %alloc_1 = memref.alloc() : memref<4x4x64x128xi16, 1 : i32>
+        %alloc_2 = memref.alloc() : memref<1x1x8x8x8x8xi8, 2 : i32>
+        %alloc_3 = memref.alloc() : memref<1x1x16x8x8x8xi8, 2 : i32>
+        %alloc_4 = memref.alloc() : memref<4x4x16x8x8x8xi16, 2 : i32>
         %0 = affine.apply #map()[%arg10]
         %1 = affine.apply #map1()[%arg11]
-        air.herd @herd_0  tile (%arg15, %arg16) in (%arg17=%c4, %arg18=%c4) args(%arg19=%alloc_6) : memref<4x4x16x16x4x8xi16, 2 : i32> {
-          %cst = arith.constant dense<0> : vector<1x1x1x1x4x8xi16>
-          %c1_7 = arith.constant 1 : index
-          %c16 = arith.constant 16 : index
-          %c0_8 = arith.constant 0 : index
-          scf.for %arg20 = %c0_8 to %c16 step %c1_7 {
-            scf.for %arg21 = %c0_8 to %c16 step %c1_7 {
-              vector.transfer_write %cst, %arg19[%arg15, %arg16, %arg20, %arg21, %c0_8, %c0_8] {in_bounds = [true, true, true, true, true, true]} : vector<1x1x1x1x4x8xi16>, memref<4x4x16x16x4x8xi16, 2 : i32>
-            }
-          }
+        %c4 = arith.constant 4 : index
+        %c4_5 = arith.constant 4 : index
+        air.herd @herd_0  tile (%arg15, %arg16) in (%arg17=%c4, %arg18=%c4_5) args(%arg19=%alloc_2, %arg20=%alloc_3, %arg21=%alloc_4, %arg22=%alloc, %arg23=%alloc_0) : memref<1x1x8x8x8x8xi8, 2 : i32>, memref<1x1x16x8x8x8xi8, 2 : i32>, memref<4x4x16x8x8x8xi16, 2 : i32>, memref<4x1x64x256xi8, 1 : i32>, memref<1x4x256x128xi8, 1 : i32> {
+          %subview = memref.subview %arg21[%arg15, %arg16, 0, 0, 0, 0] [1, 1, 16, 8, 8, 8] [1, 1, 1, 1, 1, 1] : memref<4x4x16x8x8x8xi16, 2 : i32> to memref<1x1x16x8x8x8xi16, strided<[32768, 8192, 512, 64, 8, 1], offset: ?>, 2 : i32>
+          %c0_i16 = arith.constant 0 : i16
+          linalg.fill ins(%c0_i16 : i16) outs(%subview : memref<1x1x16x8x8x8xi16, strided<[32768, 8192, 512, 64, 8, 1], offset: ?>, 2 : i32>)
         }
-        scf.for %arg15 = %c0 to %c2_1 step %c1_0 {
+        %c0 = arith.constant 0 : index
+        %c2_6 = arith.constant 2 : index
+        %c1_7 = arith.constant 1 : index
+        scf.for %arg15 = %c0 to %c2_6 step %c1_7 {
           %2 = affine.apply #map()[%arg15]
-          air.dma_memcpy_nd (%alloc[] [] [], %arg12[%c0, %c0, %0, %2] [%c4, %c1_0, %c64, %c256] [%c32768, %c256, %c512, %c1_0]) : (memref<4x1x64x256xi8, 1 : i32>, memref<512x512xi8>)
-          air.dma_memcpy_nd (%alloc_2[] [] [], %arg13[%c0, %c0, %2, %1] [%c1_0, %c4, %c256, %c128] [%c131072, %c128, %c512, %c1_0]) : (memref<1x4x256x128xi8, 1 : i32>, memref<512x512xi8>)
-          air.herd @herd_0  tile (%arg16, %arg17) in (%arg18=%c4, %arg19=%c4) args(%arg20=%alloc_4, %arg21=%alloc_5, %arg22=%alloc_6, %arg23=%alloc, %arg24=%alloc_2) : memref<1x1x8x16x4x8xi8, 2 : i32>, memref<1x1x16x8x8x8xi8, 2 : i32>, memref<4x4x16x16x4x8xi16, 2 : i32>, memref<4x1x64x256xi8, 1 : i32>, memref<1x4x256x128xi8, 1 : i32> {
-            %c64_7 = arith.constant 64 : index
-            %c512_8 = arith.constant 512 : index
-            %3 = ub.poison : i16
-            %4 = ub.poison : i8
-            %c2_9 = arith.constant 2 : index
-            %c128_10 = arith.constant 128 : index
-            %c32768_11 = arith.constant 32768 : index
-            %c131072_12 = arith.constant 131072 : index
-            %c256_13 = arith.constant 256 : index
-            %c1024 = arith.constant 1024 : index
-            %c16384 = arith.constant 16384 : index
-            %c16 = arith.constant 16 : index
-            %c8 = arith.constant 8 : index
-            %c0_14 = arith.constant 0 : index
-            %c4_15 = arith.constant 4 : index
-            %c1_16 = arith.constant 1 : index
-            scf.for %arg25 = %c0_14 to %c4_15 step %c1_16 {
-              %5 = affine.apply #map2()[%arg25]
-              air.dma_memcpy_nd (%arg20[] [] [], %arg23[%arg16, %c0_14, %c0_14, %c0_14, %c0_14, %5] [%c1_16, %c1_16, %c8, %c16, %c4_15, %c8] [%c16384, %c16384, %c8, %c1024, %c256_13, %c1_16]) : (memref<1x1x8x16x4x8xi8, 2 : i32>, memref<4x1x64x256xi8, 1 : i32>)
-              air.dma_memcpy_nd (%arg21[] [] [], %arg24[%c0_14, %arg17, %c0_14, %c0_14, %5, %c0_14] [%c1_16, %c1_16, %c16, %c8, %c8, %c8] [%c131072_12, %c32768_11, %c8, %c1024, %c128_10, %c1_16]) : (memref<1x1x16x8x8x8xi8, 2 : i32>, memref<1x4x256x128xi8, 1 : i32>)
-              scf.for %arg26 = %c0_14 to %c16 step %c2_9 {
-                scf.for %arg27 = %c0_14 to %c16 step %c2_9 {
-                  %6 = vector.transfer_read %arg22[%arg16, %arg17, %arg27, %arg26, %c0_14, %c0_14], %3 {in_bounds = [true, true, true, true]} : memref<4x4x16x16x4x8xi16, 2 : i32>, vector<1x1x4x8xi16>
-                  %7 = affine.apply #map3()[%arg27]
-                  %8 = vector.transfer_read %arg22[%arg16, %arg17, %7, %arg26, %c0_14, %c0_14], %3 {in_bounds = [true, true, true, true]} : memref<4x4x16x16x4x8xi16, 2 : i32>, vector<1x1x4x8xi16>
-                  %9 = affine.apply #map3()[%arg26]
-                  %10 = vector.transfer_read %arg22[%arg16, %arg17, %arg27, %9, %c0_14, %c0_14], %3 {in_bounds = [true, true, true, true]} : memref<4x4x16x16x4x8xi16, 2 : i32>, vector<1x1x4x8xi16>
-                  %11 = affine.apply #map3()[%arg27]
-                  %12 = affine.apply #map3()[%arg26]
-                  %13 = vector.transfer_read %arg22[%arg16, %arg17, %11, %12, %c0_14, %c0_14], %3 {in_bounds = [true, true, true, true]} : memref<4x4x16x16x4x8xi16, 2 : i32>, vector<1x1x4x8xi16>
-                  %14 = vector.shape_cast %6 : vector<1x1x4x8xi16> to vector<32xi16>
-                  %15 = vector.shape_cast %8 : vector<1x1x4x8xi16> to vector<32xi16>
-                  %16 = vector.shape_cast %10 : vector<1x1x4x8xi16> to vector<32xi16>
-                  %17 = vector.shape_cast %13 : vector<1x1x4x8xi16> to vector<32xi16>
-                  %collapse_shape = memref.collapse_shape %arg20 [[0, 1, 2, 3, 4, 5]] : memref<1x1x8x16x4x8xi8, 2 : i32> into memref<4096xi8, 2 : i32>
-                  %18 = affine.apply #map4(%arg26)
-                  %collapse_shape_17 = memref.collapse_shape %arg21 [[0, 1, 2, 3, 4, 5]] : memref<1x1x16x8x8x8xi8, 2 : i32> into memref<8192xi8, 2 : i32>
-                  %19 = affine.apply #map5(%arg27)
-                  %collapse_shape_18 = memref.collapse_shape %arg21 [[0, 1, 2, 3, 4, 5]] : memref<1x1x16x8x8x8xi8, 2 : i32> into memref<8192xi8, 2 : i32>
-                  %20 = affine.apply #map6()[%arg27]
-                  %collapse_shape_19 = memref.collapse_shape %arg20 [[0, 1, 2, 3, 4, 5]] : memref<1x1x8x16x4x8xi8, 2 : i32> into memref<4096xi8, 2 : i32>
-                  %21 = affine.apply #map7()[%arg26]
-                  %22 = arith.extsi %14 : vector<32xi16> to vector<32xi32>
-                  %23 = arith.extsi %15 : vector<32xi16> to vector<32xi32>
-                  %24 = arith.extsi %16 : vector<32xi16> to vector<32xi32>
-                  %25 = arith.extsi %17 : vector<32xi16> to vector<32xi32>
-                  %26:8 = scf.for %arg28 = %c0_14 to %c8 step %c1_16 iter_args(%arg29 = %22, %arg30 = %23, %arg31 = %24, %arg32 = %25, %arg33 = %18, %arg34 = %19, %arg35 = %20, %arg36 = %21) -> (vector<32xi32>, vector<32xi32>, vector<32xi32>, vector<32xi32>, index, index, index, index) {
-                    %39 = vector.shape_cast %arg29 : vector<32xi32> to vector<1x1x4x8xi32>
-                    %40 = vector.shape_cast %arg30 : vector<32xi32> to vector<1x1x4x8xi32>
-                    %41 = vector.shape_cast %arg31 : vector<32xi32> to vector<1x1x4x8xi32>
-                    %42 = vector.shape_cast %arg32 : vector<32xi32> to vector<1x1x4x8xi32>
-                    %43 = vector.transfer_read %collapse_shape[%arg33], %4 {in_bounds = [true]} : memref<4096xi8, 2 : i32>, vector<32xi8>
-                    %44 = vector.shape_cast %43 : vector<32xi8> to vector<1x1x4x8xi8>
-                    %45 = arith.addi %arg33, %c512_8 : index
-                    %46 = vector.transfer_read %collapse_shape_17[%arg34], %4 {in_bounds = [true]} : memref<8192xi8, 2 : i32>, vector<64xi8>
-                    %47 = vector.shape_cast %46 : vector<64xi8> to vector<1x1x8x8xi8>
-                    %48 = arith.addi %arg34, %c64_7 : index
-                    %49 = arith.extsi %44 : vector<1x1x4x8xi8> to vector<1x1x4x8xi16>
-                    %50 = arith.extsi %47 : vector<1x1x8x8xi8> to vector<1x1x8x8xi16>
-                    %51 = vector.contract {indexing_maps = [#map8, #map9, #map10], iterator_types = ["parallel", "parallel", "reduction", "parallel", "parallel", "reduction"], kind = #vector.kind<add>} %49, %50, %39 : vector<1x1x4x8xi16>, vector<1x1x8x8xi16> into vector<1x1x4x8xi32>
-                    %52 = vector.transfer_read %collapse_shape_18[%arg35], %4 {in_bounds = [true]} : memref<8192xi8, 2 : i32>, vector<64xi8>
-                    %53 = vector.shape_cast %52 : vector<64xi8> to vector<1x1x8x8xi8>
-                    %54 = arith.addi %arg35, %c64_7 : index
-                    %55 = arith.extsi %44 : vector<1x1x4x8xi8> to vector<1x1x4x8xi16>
-                    %56 = arith.extsi %53 : vector<1x1x8x8xi8> to vector<1x1x8x8xi16>
-                    %57 = vector.contract {indexing_maps = [#map8, #map9, #map10], iterator_types = ["parallel", "parallel", "reduction", "parallel", "parallel", "reduction"], kind = #vector.kind<add>} %55, %56, %40 : vector<1x1x4x8xi16>, vector<1x1x8x8xi16> into vector<1x1x4x8xi32>
-                    %58 = vector.transfer_read %collapse_shape_19[%arg36], %4 {in_bounds = [true]} : memref<4096xi8, 2 : i32>, vector<32xi8>
-                    %59 = vector.shape_cast %58 : vector<32xi8> to vector<1x1x4x8xi8>
-                    %60 = arith.addi %arg36, %c512_8 : index
-                    %61 = arith.extsi %59 : vector<1x1x4x8xi8> to vector<1x1x4x8xi16>
-                    %62 = arith.extsi %47 : vector<1x1x8x8xi8> to vector<1x1x8x8xi16>
-                    %63 = vector.contract {indexing_maps = [#map8, #map9, #map10], iterator_types = ["parallel", "parallel", "reduction", "parallel", "parallel", "reduction"], kind = #vector.kind<add>} %61, %62, %41 : vector<1x1x4x8xi16>, vector<1x1x8x8xi16> into vector<1x1x4x8xi32>
-                    %64 = arith.extsi %59 : vector<1x1x4x8xi8> to vector<1x1x4x8xi16>
-                    %65 = arith.extsi %53 : vector<1x1x8x8xi8> to vector<1x1x8x8xi16>
-                    %66 = vector.contract {indexing_maps = [#map8, #map9, #map10], iterator_types = ["parallel", "parallel", "reduction", "parallel", "parallel", "reduction"], kind = #vector.kind<add>} %64, %65, %42 : vector<1x1x4x8xi16>, vector<1x1x8x8xi16> into vector<1x1x4x8xi32>
-                    %67 = vector.shape_cast %51 : vector<1x1x4x8xi32> to vector<32xi32>
-                    %68 = vector.shape_cast %57 : vector<1x1x4x8xi32> to vector<32xi32>
-                    %69 = vector.shape_cast %63 : vector<1x1x4x8xi32> to vector<32xi32>
-                    %70 = vector.shape_cast %66 : vector<1x1x4x8xi32> to vector<32xi32>
-                    scf.yield %67, %68, %69, %70, %45, %48, %54, %60 : vector<32xi32>, vector<32xi32>, vector<32xi32>, vector<32xi32>, index, index, index, index
-                  }
-                  %27 = arith.trunci %26#3 : vector<32xi32> to vector<32xi16>
-                  %28 = arith.trunci %26#2 : vector<32xi32> to vector<32xi16>
-                  %29 = arith.trunci %26#1 : vector<32xi32> to vector<32xi16>
-                  %30 = arith.trunci %26#0 : vector<32xi32> to vector<32xi16>
-                  %31 = vector.shape_cast %30 : vector<32xi16> to vector<1x1x4x8xi16>
-                  %32 = vector.shape_cast %29 : vector<32xi16> to vector<1x1x4x8xi16>
-                  %33 = vector.shape_cast %28 : vector<32xi16> to vector<1x1x4x8xi16>
-                  %34 = vector.shape_cast %27 : vector<32xi16> to vector<1x1x4x8xi16>
-                  %35 = affine.apply #map3()[%arg27]
-                  %36 = affine.apply #map3()[%arg26]
-                  vector.transfer_write %34, %arg22[%arg16, %arg17, %35, %36, %c0_14, %c0_14] {in_bounds = [true, true, true, true]} : vector<1x1x4x8xi16>, memref<4x4x16x16x4x8xi16, 2 : i32>
-                  %37 = affine.apply #map3()[%arg26]
-                  vector.transfer_write %33, %arg22[%arg16, %arg17, %arg27, %37, %c0_14, %c0_14] {in_bounds = [true, true, true, true]} : vector<1x1x4x8xi16>, memref<4x4x16x16x4x8xi16, 2 : i32>
-                  %38 = affine.apply #map3()[%arg27]
-                  vector.transfer_write %32, %arg22[%arg16, %arg17, %38, %arg26, %c0_14, %c0_14] {in_bounds = [true, true, true, true]} : vector<1x1x4x8xi16>, memref<4x4x16x16x4x8xi16, 2 : i32>
-                  vector.transfer_write %31, %arg22[%arg16, %arg17, %arg27, %arg26, %c0_14, %c0_14] {in_bounds = [true, true, true, true]} : vector<1x1x4x8xi16>, memref<4x4x16x16x4x8xi16, 2 : i32>
-                }
+          %c0_20 = arith.constant 0 : index
+          %c0_21 = arith.constant 0 : index
+          %c4_22 = arith.constant 4 : index
+          %c1_23 = arith.constant 1 : index
+          %c64_24 = arith.constant 64 : index
+          %c256_25 = arith.constant 256 : index
+          %c32768_26 = arith.constant 32768 : index
+          %c256_27 = arith.constant 256 : index
+          %c512_28 = arith.constant 512 : index
+          %c1_29 = arith.constant 1 : index
+          air.dma_memcpy_nd (%alloc[] [] [], %arg12[%c0_20, %c0_21, %0, %2] [%c4_22, %c1_23, %c64_24, %c256_25] [%c32768_26, %c256_27, %c512_28, %c1_29]) : (memref<4x1x64x256xi8, 1 : i32>, memref<512x512xi8>)
+          %c0_30 = arith.constant 0 : index
+          %c0_31 = arith.constant 0 : index
+          %c1_32 = arith.constant 1 : index
+          %c4_33 = arith.constant 4 : index
+          %c256_34 = arith.constant 256 : index
+          %c128_35 = arith.constant 128 : index
+          %c131072 = arith.constant 131072 : index
+          %c128_36 = arith.constant 128 : index
+          %c512_37 = arith.constant 512 : index
+          %c1_38 = arith.constant 1 : index
+          air.dma_memcpy_nd (%alloc_0[] [] [], %arg13[%c0_30, %c0_31, %2, %1] [%c1_32, %c4_33, %c256_34, %c128_35] [%c131072, %c128_36, %c512_37, %c1_38]) : (memref<1x4x256x128xi8, 1 : i32>, memref<512x512xi8>)
+          %c4_39 = arith.constant 4 : index
+          %c4_40 = arith.constant 4 : index
+          air.herd @herd_0  tile (%arg16, %arg17) in (%arg18=%c4_39, %arg19=%c4_40) args(%arg20=%alloc_2, %arg21=%alloc_3, %arg22=%alloc_4, %arg23=%alloc, %arg24=%alloc_0) : memref<1x1x8x8x8x8xi8, 2 : i32>, memref<1x1x16x8x8x8xi8, 2 : i32>, memref<4x4x16x8x8x8xi16, 2 : i32>, memref<4x1x64x256xi8, 1 : i32>, memref<1x4x256x128xi8, 1 : i32> {
+            %c0_41 = arith.constant 0 : index
+            %c4_42 = arith.constant 4 : index
+            %c1_43 = arith.constant 1 : index
+            scf.for %arg25 = %c0_41 to %c4_42 step %c1_43 {
+              %3 = affine.apply #map2()[%arg25]
+              %c0_44 = arith.constant 0 : index
+              %c0_45 = arith.constant 0 : index
+              %c0_46 = arith.constant 0 : index
+              %c0_47 = arith.constant 0 : index
+              %c1_48 = arith.constant 1 : index
+              %c1_49 = arith.constant 1 : index
+              %c8 = arith.constant 8 : index
+              %c8_50 = arith.constant 8 : index
+              %c8_51 = arith.constant 8 : index
+              %c8_52 = arith.constant 8 : index
+              %c16384 = arith.constant 16384 : index
+              %c16384_53 = arith.constant 16384 : index
+              %c8_54 = arith.constant 8 : index
+              %c2048 = arith.constant 2048 : index
+              %c256_55 = arith.constant 256 : index
+              %c1_56 = arith.constant 1 : index
+              air.dma_memcpy_nd (%arg20[] [] [], %arg23[%arg16, %c0_44, %c0_45, %c0_46, %c0_47, %3] [%c1_48, %c1_49, %c8, %c8_50, %c8_51, %c8_52] [%c16384, %c16384_53, %c8_54, %c2048, %c256_55, %c1_56]) : (memref<1x1x8x8x8x8xi8, 2 : i32>, memref<4x1x64x256xi8, 1 : i32>)
+              %c0_57 = arith.constant 0 : index
+              %c0_58 = arith.constant 0 : index
+              %c0_59 = arith.constant 0 : index
+              %c0_60 = arith.constant 0 : index
+              %c1_61 = arith.constant 1 : index
+              %c1_62 = arith.constant 1 : index
+              %c16 = arith.constant 16 : index
+              %c8_63 = arith.constant 8 : index
+              %c8_64 = arith.constant 8 : index
+              %c8_65 = arith.constant 8 : index
+              %c131072_66 = arith.constant 131072 : index
+              %c32768_67 = arith.constant 32768 : index
+              %c8_68 = arith.constant 8 : index
+              %c1024 = arith.constant 1024 : index
+              %c128_69 = arith.constant 128 : index
+              %c1_70 = arith.constant 1 : index
+              air.dma_memcpy_nd (%arg21[] [] [], %arg24[%c0_57, %arg17, %c0_58, %c0_59, %3, %c0_60] [%c1_61, %c1_62, %c16, %c8_63, %c8_64, %c8_65] [%c131072_66, %c32768_67, %c8_68, %c1024, %c128_69, %c1_70]) : (memref<1x1x16x8x8x8xi8, 2 : i32>, memref<1x4x256x128xi8, 1 : i32>)
+              %subview = memref.subview %arg22[%arg16, %arg17, 0, 0, 0, 0] [1, 1, 16, 8, 8, 8] [1, 1, 1, 1, 1, 1] : memref<4x4x16x8x8x8xi16, 2 : i32> to memref<1x1x16x8x8x8xi16, strided<[32768, 8192, 512, 64, 8, 1], offset: ?>, 2 : i32>
+              linalg.generic {indexing_maps = [#map3, #map4, #map5], iterator_types = ["parallel", "parallel", "reduction", "parallel", "parallel", "reduction", "parallel", "parallel", "reduction"]} ins(%arg20, %arg21 : memref<1x1x8x8x8x8xi8, 2 : i32>, memref<1x1x16x8x8x8xi8, 2 : i32>) outs(%subview : memref<1x1x16x8x8x8xi16, strided<[32768, 8192, 512, 64, 8, 1], offset: ?>, 2 : i32>) {
+              ^bb0(%in: i8, %in_71: i8, %out: i16):
+                %4 = arith.extsi %in : i8 to i16
+                %5 = arith.extsi %in_71 : i8 to i16
+                %6 = arith.muli %4, %5 : i16
+                %7 = arith.addi %out, %6 : i16
+                linalg.yield %7 : i16
               }
             }
           }
         }
-        air.herd @herd_0  tile (%arg15, %arg16) in (%arg17=%c4, %arg18=%c4) args(%arg19=%alloc_6, %arg20=%alloc_3) : memref<4x4x16x16x4x8xi16, 2 : i32>, memref<4x4x64x128xi16, 1 : i32> {
-          %c512_7 = arith.constant 512 : index
-          %c32 = arith.constant 32 : index
+        %c4_8 = arith.constant 4 : index
+        %c4_9 = arith.constant 4 : index
+        air.herd @herd_0  tile (%arg15, %arg16) in (%arg17=%c4_8, %arg18=%c4_9) args(%arg19=%alloc_2, %arg20=%alloc_3, %arg21=%alloc_4, %arg22=%alloc, %arg23=%alloc_0, %arg24=%alloc_1) : memref<1x1x8x8x8x8xi8, 2 : i32>, memref<1x1x16x8x8x8xi8, 2 : i32>, memref<4x4x16x8x8x8xi16, 2 : i32>, memref<4x1x64x256xi8, 1 : i32>, memref<1x4x256x128xi8, 1 : i32>, memref<4x4x64x128xi16, 1 : i32> {
+          %subview = memref.subview %arg21[%arg15, %arg16, 0, 0, 0, 0] [1, 1, 16, 8, 8, 8] [1, 1, 1, 1, 1, 1] : memref<4x4x16x8x8x8xi16, 2 : i32> to memref<1x1x16x8x8x8xi16, strided<[32768, 8192, 512, 64, 8, 1], offset: ?>, 2 : i32>
+          %c0_20 = arith.constant 0 : index
+          %c0_21 = arith.constant 0 : index
+          %c1_22 = arith.constant 1 : index
+          %c1_23 = arith.constant 1 : index
+          %c64_24 = arith.constant 64 : index
+          %c128_25 = arith.constant 128 : index
+          %c32768_26 = arith.constant 32768 : index
+          %c8192_27 = arith.constant 8192 : index
+          %c128_28 = arith.constant 128 : index
+          %c1_29 = arith.constant 1 : index
+          %c0_30 = arith.constant 0 : index
+          %c0_31 = arith.constant 0 : index
+          %c0_32 = arith.constant 0 : index
+          %c0_33 = arith.constant 0 : index
+          %c1_34 = arith.constant 1 : index
+          %c1_35 = arith.constant 1 : index
           %c8 = arith.constant 8 : index
-          %c4_8 = arith.constant 4 : index
+          %c8_36 = arith.constant 8 : index
           %c16 = arith.constant 16 : index
-          %c8192_9 = arith.constant 8192 : index
-          %c32768_10 = arith.constant 32768 : index
-          %c128_11 = arith.constant 128 : index
-          %c64_12 = arith.constant 64 : index
-          %c1_13 = arith.constant 1 : index
-          %c0_14 = arith.constant 0 : index
-          air.dma_memcpy_nd (%arg20[%arg15, %arg16, %c0_14, %c0_14] [%c1_13, %c1_13, %c64_12, %c128_11] [%c32768_10, %c8192_9, %c128_11, %c1_13], %arg19[%arg15, %arg16, %c0_14, %c0_14, %c0_14, %c0_14] [%c1_13, %c1_13, %c16, %c4_8, %c16, %c8] [%c32768_10, %c8192_9, %c32, %c8, %c512_7, %c1_13]) : (memref<4x4x64x128xi16, 1 : i32>, memref<4x4x16x16x4x8xi16, 2 : i32>)
+          %c8_37 = arith.constant 8 : index
+          %c32768_38 = arith.constant 32768 : index
+          %c8192_39 = arith.constant 8192 : index
+          %c64_40 = arith.constant 64 : index
+          %c8_41 = arith.constant 8 : index
+          %c512_42 = arith.constant 512 : index
+          %c1_43 = arith.constant 1 : index
+          air.dma_memcpy_nd (%arg24[%arg15, %arg16, %c0_20, %c0_21] [%c1_22, %c1_23, %c64_24, %c128_25] [%c32768_26, %c8192_27, %c128_28, %c1_29], %arg21[%arg15, %arg16, %c0_30, %c0_31, %c0_32, %c0_33] [%c1_34, %c1_35, %c8, %c8_36, %c16, %c8_37] [%c32768_38, %c8192_39, %c64_40, %c8_41, %c512_42, %c1_43]) : (memref<4x4x64x128xi16, 1 : i32>, memref<4x4x16x8x8x8xi16, 2 : i32>)
         }
-        air.dma_memcpy_nd (%arg14[%0, %1] [%c256, %c512] [%c512, %c1_0], %alloc_3[%c0, %c0, %c0, %c0] [%c4, %c64, %c4, %c128] [%c32768, %c128, %c8192, %c1_0]) : (memref<512x512xi16>, memref<4x4x64x128xi16, 1 : i32>)
+        %c256 = arith.constant 256 : index
+        %c512 = arith.constant 512 : index
+        %c512_10 = arith.constant 512 : index
+        %c1_11 = arith.constant 1 : index
+        %c0_12 = arith.constant 0 : index
+        %c0_13 = arith.constant 0 : index
+        %c0_14 = arith.constant 0 : index
+        %c0_15 = arith.constant 0 : index
+        %c4_16 = arith.constant 4 : index
+        %c64 = arith.constant 64 : index
+        %c4_17 = arith.constant 4 : index
+        %c128 = arith.constant 128 : index
+        %c32768 = arith.constant 32768 : index
+        %c128_18 = arith.constant 128 : index
+        %c8192 = arith.constant 8192 : index
+        %c1_19 = arith.constant 1 : index
+        air.dma_memcpy_nd (%arg14[%0, %1] [%c256, %c512] [%c512_10, %c1_11], %alloc_1[%c0_12, %c0_13, %c0_14, %c0_15] [%c4_16, %c64, %c4_17, %c128] [%c32768, %c128_18, %c8192, %c1_19]) : (memref<512x512xi16>, memref<4x4x64x128xi16, 1 : i32>)
         memref.dealloc %alloc : memref<4x1x64x256xi8, 1 : i32>
-        memref.dealloc %alloc_2 : memref<1x4x256x128xi8, 1 : i32>
-        memref.dealloc %alloc_3 : memref<4x4x64x128xi16, 1 : i32>
-        memref.dealloc %alloc_4 : memref<1x1x8x16x4x8xi8, 2 : i32>
-        memref.dealloc %alloc_5 : memref<1x1x16x8x8x8xi8, 2 : i32>
-        memref.dealloc %alloc_6 : memref<4x4x16x16x4x8xi16, 2 : i32>
+        memref.dealloc %alloc_0 : memref<1x4x256x128xi8, 1 : i32>
+        memref.dealloc %alloc_1 : memref<4x4x64x128xi16, 1 : i32>
+        memref.dealloc %alloc_2 : memref<1x1x8x8x8x8xi8, 2 : i32>
+        memref.dealloc %alloc_3 : memref<1x1x16x8x8x8xi8, 2 : i32>
+        memref.dealloc %alloc_4 : memref<4x4x16x8x8x8xi16, 2 : i32>
       }
     }
     return
