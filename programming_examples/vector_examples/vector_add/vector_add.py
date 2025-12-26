@@ -164,7 +164,7 @@ def build_module(n, tile_n, np_dtype_in):
 
 if __name__ == "__main__":
     # Default values.
-    N = 1024
+    N = 4096
     TILE_N = 256
     INPUT_DATATYPE = np.float32
 
